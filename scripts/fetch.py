@@ -167,9 +167,23 @@ def fetch_one(http, s):
 
 
 def main():
+    import argparse
+
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--only", action="append", default=[],
+                    help="nur diese Sheet-ID laden; mehrfach angebbar. Bestehender "
+                         "fetch_report.json bleibt erhalten und wird ergaenzt.")
+    args = ap.parse_args()
+
     cfg = yaml.safe_load((ROOT / "sources.yaml").read_text(encoding="utf-8"))
-    plain = [s for s in cfg["sources"] if not s.get("auth")]
-    authed = [s for s in cfg["sources"] if s.get("auth")]
+    sources = cfg["sources"]
+    if args.only:
+        sources = [s for s in sources if s["id"] in args.only]
+        missing = set(args.only) - {s["id"] for s in sources}
+        if missing:
+            sys.exit(f"Nicht in sources.yaml: {', '.join(sorted(missing))}")
+    plain = [s for s in sources if not s.get("auth")]
+    authed = [s for s in sources if s.get("auth")]
 
     results = []
     http = RequestsHTTP()
@@ -190,8 +204,16 @@ def main():
         finally:
             browser.close()
 
-    (ROOT / "data" / "fetch_report.json").write_text(
-        json.dumps(results, indent=1, ensure_ascii=False), encoding="utf-8"
+    report_path = ROOT / "data" / "fetch_report.json"
+    merged = results
+    if args.only and report_path.exists():
+        # Teil-Lauf: bestehende Eintraege behalten, nur die geladenen ersetzen
+        fresh = {r["id"] for r in results}
+        old = [r for r in json.loads(report_path.read_text(encoding="utf-8"))
+               if r["id"] not in fresh]
+        merged = old + results
+    report_path.write_text(
+        json.dumps(merged, indent=1, ensure_ascii=False), encoding="utf-8"
     )
     fails = [r for r in results if not r["ok"]]
     print(f"\n{len(results) - len(fails)}/{len(results)} ok")

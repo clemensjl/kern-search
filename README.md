@@ -22,6 +22,19 @@ Live: https://clemensjl.github.io/kina-search/
    Datei nach `data/manual/` legen (wird beim Build mit eingelesen).
 3. `.\build.ps1 -Deploy`
 
+Nur die neue Quelle nachladen statt aller ~70 Sheets (spart Stunden, kein
+Google-Login noetig, bestehende Rohdaten bleiben liegen):
+
+```powershell
+python scripts\fetch.py --only <SHEET-ID> [--only <SHEET-ID>]
+python scripts\parse.py; python scripts\enrich.py; python scripts\thumbs.py
+python scripts\compact.py; python scripts\prune_dead.py
+```
+
+`--only` ergaenzt `data/fetch_report.json`, statt ihn zu ueberschreiben - die
+Tab-Namen der uebrigen Quellen bleiben erhalten (parse.py braucht sie fuer die
+Kategorisierung).
+
 ## Aufbau
 
 - `scripts/fetch.py` - laedt native Sheets tab-weise als HTML (htmlview-Route,

@@ -69,6 +69,12 @@ sources:
   - id: 1g4uQVNJ3ROFmcOT6tSKDspnRvmYAPIQroRBMP5sb3X8   # 100+ Items Haul
   - id: 1IPF-mWjit-UtTlY09WQLTSdKwHjUu_CU0JvYWOAK8Ls   # fullcloset rep list
   - id: 1DAQ__r9RNx4mHgcDoXvzda9-0d_yeP7hqXdRUZ67EtM   # ULTIMATE Pandabuy (1750+)
+
+# --- Nachtrag 05.08.2026 ---
+  - id: 1u-T-LeA-6EdeSJAeoMAkuBIeKCkiFKESJRMeq5Iya5I
+    name: "Only Opponent Spreadsheet"
+  - id: 11nlOOdG-r5AiFtFriXsKCactjdC1BE-0gCIRCHkO83w
+    name: "kakobuy best spreadsheet 10000+ Finds"
 # published Sheets (eigene ID-Klasse /d/e/...)
   - id: 2PACX-1vQjdI_xnY_ETqPcC_ze2X3Mt3pH7j3A1QT9khFlgYq49MefDzDVR_7FIl8ytdUTrdnCLr_3UlNkxOOq
     type: published   # Ultimate Kakobuy Sneaker (33k+ Links Tab 1)
