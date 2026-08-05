@@ -10,14 +10,15 @@ const BATCH = 120;
 const VERIFIED = "Von uns verifiziert";
 const CAT_ORDER = [
   VERIFIED, "Schuhe", "Shirts & Tees", "Hoodies & Sweater", "Jacken", "Hosen & Shorts",
-  "Trikots", "Taschen", "Uhren", "Schmuck & Accessoires", "Parfum", "Elektronik", "Sonstiges",
+  "Kleider & Röcke", "Trikots", "Taschen", "Uhren", "Schmuck & Accessoires", "Parfum",
+  "Elektronik", "Home & Deko", "Sonstiges",
 ];
 const CAT_EN: Record<string, string> = {
   [VERIFIED]: "Verified by us", "Schuhe": "Shoes", "Shirts & Tees": "Shirts & Tees",
   "Hoodies & Sweater": "Hoodies & Sweaters", "Jacken": "Jackets", "Hosen & Shorts": "Pants & Shorts",
-  "Trikots": "Jerseys", "Taschen": "Bags", "Uhren": "Watches",
+  "Kleider & Röcke": "Dresses & Skirts", "Trikots": "Jerseys", "Taschen": "Bags", "Uhren": "Watches",
   "Schmuck & Accessoires": "Jewelry & Accessories", "Parfum": "Fragrance",
-  "Elektronik": "Electronics", "Sonstiges": "Other", "Alle": "All",
+  "Elektronik": "Electronics", "Home & Deko": "Home & Decor", "Sonstiges": "Other", "Alle": "All",
 };
 
 function agentByKey(key: string): Agent {

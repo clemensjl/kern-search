@@ -10,7 +10,8 @@ type Sub = {
 type Ver = { id: string; name: string; url: string; rating: number; category: string | null };
 
 const CATS = ["Schuhe", "Shirts & Tees", "Hoodies & Sweater", "Jacken", "Hosen & Shorts",
-  "Trikots", "Taschen", "Uhren", "Schmuck & Accessoires", "Parfum", "Elektronik", "Sonstiges"];
+  "Kleider & Röcke", "Trikots", "Taschen", "Uhren", "Schmuck & Accessoires", "Parfum",
+  "Elektronik", "Home & Deko", "Sonstiges"];
 
 export default function Admin() {
   const { data: session, status } = useSession();

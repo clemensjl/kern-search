@@ -61,23 +61,41 @@ NOISE_NAME = re.compile(
     re.I,
 )
 
-# Eindeutige Produkttyp-Woerter schlagen Marken-Proxys und Tab-Namen
+# Eindeutige Produkttyp-Woerter schlagen Marken-Proxys und Tab-Namen.
+# Spanische Begriffe, weil mehrere Sheets auf Spanisch gefuehrt werden
+# (camiseta/sudadera/gorra machten allein 310 Sonstiges-Items aus).
 STRONG_TYPES = [
-    ("Shirts & Tees", r"\btees?\b|t-?shirts?\b|\bshirts?\b|\bpolos?\b|longsleeve|long sleeve|\bvests?\b|tank top"),
-    ("Hoodies & Sweater", r"hoodies?\b|sweaters?\b|sweatshirts?\b|crewnecks?\b|zip.?ups?\b|cardigans?\b|pullovers?\b|fleece\b"),
-    ("Jacken", r"jackets?\b|puffers?\b|\bcoats?\b|parkas?\b|windbreakers?\b|varsity|bombers?\b"),
-    ("Hosen & Shorts", r"\bpants\b|\bjeans\b|\bshorts\b|sweatpants?\b|trousers?\b|cargos?\b|tracksuits?\b|joggers?\b|boxers?\b"),
+    # Nur eindeutige Fussball-Marker vor den Oberteilen: "camiseta" allein heisst
+    # Shirt, erst mit futbol/visitante wird ein Trikot daraus. Das generische
+    # "jersey" bleibt weiter unten, sonst kippen Jersey-STOFF-Shirts mit rein.
+    ("Trikots", r"camisetas? (de )?f[uú]tbol\b|\b(visitante|titular|suplente)\b|football kit\b"),
+    ("Shirts & Tees", r"\btees?\b|t-?shirts?\b|\bshirts?\b|\bpolos?\b|longsleeve|long sleeve|\bvests?\b|tank top|"
+                      r"camisetas?\b|halter tops?\b|crop ?tops?\b|tube tops?\b|camisoles?\b|bodysuits?\b|blouses?\b|corsets?\b"),
+    ("Hoodies & Sweater", r"hoodies?\b|sweaters?\b|sweatshirts?\b|crewnecks?\b|zip.?ups?\b|cardigans?\b|pullovers?\b|fleece\b|sudaderas?\b"),
+    ("Jacken", r"jackets?\b|puffers?\b|\bcoats?\b|parkas?\b|windbreakers?\b|varsity|bombers?\b|chaquetas?\b|cazadoras?\b"),
+    ("Hosen & Shorts", r"\bpants\b|\bjeans\b|\bshorts\b|sweatpants?\b|trousers?\b|cargos?\b|tracksuits?\b|joggers?\b|boxers?\b|"
+                       r"\bjorts\b|culottes?\b|\bsweats\b|pantalones?\b|bermudas?\b|track ?pants?\b"),
     ("Trikots", r"jerseys?\b|trikots?\b"),
-    ("Taschen", r"\bbags?\b|backpacks?\b|totes?\b|crossbody|messengers?\b|duffle|wallets?\b|cardholders?\b"),
-    ("Uhren", r"\bwatch\b|\bwatches\b"),
-    ("Schuhe", r"\bshoes?\b|sneakers?\b|\bslides?\b|slippers?\b|sandals?\b|\bboots?\b|loafers?\b|trainers?\b|\bdunks?\b|\bheels?\b|\bcleats?\b"),
-    ("Parfum", r"parfums?\b|perfumes?\b|colognes?\b|fragrances?\b"),
-    ("Schmuck & Accessoires", r"necklaces?\b|pendants?\b|bracelets?\b|earrings?\b|\bbelts?\b|\bcaps?\b|beanies?\b|sunglass|\bsocks?\b|\brings?\b|scarf|scarves"),
+    ("Taschen", r"\bbags?\b|backpacks?\b|totes?\b|crossbody|messengers?\b|duffle|wallets?\b|cardholders?\b|bolsos?\b|mochilas?\b"),
+    ("Uhren", r"\bwatch\b|\bwatches\b|relojes?\b"),
+    ("Schuhe", r"\bshoes?\b|sneakers?\b|\bslides?\b|slippers?\b|sandals?\b|\bboots?\b|loafers?\b|trainers?\b|\bdunks?\b|\bheels?\b|\bcleats?\b|"
+               r"zapatillas?\b|zapatos?\b|\bbotas\b"),
+    ("Parfum", r"parfums?\b|perfumes?\b|colognes?\b|fragrances?\b|\d{2,3}\s?ml\b|\bed[pt]\b|eau de"),
+    ("Schmuck & Accessoires", r"necklaces?\b|pendants?\b|bracelets?\b|earrings?\b|\bbelts?\b|\bcaps?\b|beanies?\b|sunglass|\bsocks?\b|\brings?\b|scarf|scarves|gorras?\b|\bgloves?\b"),
+    # Nach den Oberteilen, damit "dress shirt"/"dress shoes"/"dress pants" dort bleiben
+    ("Kleider & Röcke", r"\bdress(es)?\b|\bskirts?\b|\bgowns?\b|jumpsuits?\b|\brompers?\b|vestidos?\b|\bfaldas?\b"),
+    ("Home & Deko", r"\bpillows?\b|pillowcases?\b|\brugs?\b|carpets?\b|blankets?\b|\btowels?\b|\bposters?\b|\bcandles?\b|"
+                    r"\bmugs?\b|\bvases?\b|bedding\b|duvets?\b|\bcurtains?\b|tapestr(y|ies)\b"),
 ]
 STRONG_TYPES_C = [(c, re.compile(p, re.I)) for c, p in STRONG_TYPES]
 
 CATEGORIES = [
-    ("Schuhe", r"shoe|sneaker|slide|slipper|sandal|boot|loafer|trainer|dunk|jordan|\baj\d|af1|airmax|air max|yeezy|new balance|bapesta|\bsb\b|foam|croc|heel|mule|birkenstock|samba|gazelle|campus|3xl|b30|b22|b27|tabi"),
+    # Modellnamen ohne Typwort ("Adidas Adizero Adios 9"): abgeleitet aus den
+    # bereits kategorisierten Items, nur Tokens mit >85% Sortenreinheit.
+    ("Schuhe", r"shoe|sneaker|slide|slipper|sandal|boot|loafer|trainer|dunk|jordan|\baj\d|af1|airmax|air max|yeezy|new balance|bapesta|\bsb\b|foam|croc|heel|mule|birkenstock|samba|gazelle|campus|3xl|b30|b22|b27|tabi|"
+               r"adizero|predator|mercurial|superfly|tiempo|phantom\b|\bf50\b|ultraboost|gel-\w+|kayano|nimbus|novablast|"
+               r"cloudmonster|cloudsurfer|cloudrunner|\bbondi\b|clifton|pegasus|vomero|invincible|alphafly|vaporfly|"
+               r"air zoom|nike zoom|nike shox|huarache|cortez|\bhoka\b|asics|timberland|\bugg\b|converse|chuck taylor"),
     ("Trikots", r"jersey|jerseys|trikot|#\d+ |city edition|nba|nfl|soccer|football kit"),
     ("Shirts & Tees", r"\btee\b|tees|t-?shirt|shirt|polo|longsleeve|long sleeve|vest|tank"),
     ("Hoodies & Sweater", r"hoodie|sweater|sweatshirt|crewneck|zip|cardigan|knit|fleece|pullover"),
@@ -88,6 +106,8 @@ CATEGORIES = [
     ("Schmuck & Accessoires", r"jewel|rings?\b|necklace|pendant|chain|bracelet|earring|belt|caps?\b|hats?\b|beanie|sunglass|glasses|scarf|glove|sock|accessor|keychain|airpods case|phone case"),
     ("Parfum", r"parfum|perfume|cologne|fragrance|tom ford|dior sauvage|creed"),
     ("Elektronik", r"electronic|airpods|iphone|ipad|samsung|dyson|bose|\bjbl\b|sony|beats|marshall|jabra|headphone|earbud|speaker|playstation|controller|lego|philips|shure|console|smartwatch"),
+    ("Kleider & Röcke", r"dress|skirt|gown|jumpsuit|romper|vestido|falda"),
+    ("Home & Deko", r"pillow|rug\b|carpet|blanket|towel|poster|candle|\bmug|vase|bedding|duvet|curtain|tapestry|room decor|home decor"),
 ]
 
 

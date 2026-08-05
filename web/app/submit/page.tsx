@@ -4,7 +4,8 @@ import { useSession } from "next-auth/react";
 import { usePrefs } from "@/components/Prefs";
 
 const CATS = ["Schuhe", "Shirts & Tees", "Hoodies & Sweater", "Jacken", "Hosen & Shorts",
-  "Trikots", "Taschen", "Uhren", "Schmuck & Accessoires", "Parfum", "Elektronik", "Sonstiges"];
+  "Kleider & Röcke", "Trikots", "Taschen", "Uhren", "Schmuck & Accessoires", "Parfum",
+  "Elektronik", "Home & Deko", "Sonstiges"];
 
 type Sub = { id: string; name: string; url: string; status: string; created_at: string };
 
