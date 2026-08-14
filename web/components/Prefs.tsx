@@ -7,7 +7,13 @@ import type { Cur } from "@/lib/data";
 export type Theme = "light" | "dark";
 export type Prefs = { cur: Cur; lang: Lang; theme: Theme; agent: string };
 
-const DEFAULTS: Prefs = { cur: "EUR", lang: "de", theme: "light", agent: "litbuy" };
+const DEFAULTS: Prefs = { cur: "EUR", lang: "de", theme: "dark", agent: "litbuy" };
+
+// Ohne gespeicherte Wahl folgt das Theme dem System, nicht einem festen Wert.
+function systemTheme(): Theme {
+  if (typeof window === "undefined" || !window.matchMedia) return DEFAULTS.theme;
+  return window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+}
 
 const Ctx = createContext<{
   prefs: Prefs;
@@ -20,10 +26,12 @@ export const usePrefs = () => useContext(Ctx);
 
 function load(): Prefs {
   if (typeof window === "undefined") return DEFAULTS;
+  // Gespeicherte Wahl steht hinter der Systemvorgabe und gewinnt deshalb.
+  const base: Prefs = { ...DEFAULTS, theme: systemTheme() };
   try {
-    return { ...DEFAULTS, ...JSON.parse(localStorage.getItem("prefs") || "{}") };
+    return { ...base, ...JSON.parse(localStorage.getItem("prefs") || "{}") };
   } catch {
-    return DEFAULTS;
+    return base;
   }
 }
 
@@ -31,10 +39,12 @@ export default function PrefsProvider({ children }: { children: React.ReactNode 
   const { status } = useSession();
   const [prefs, setPrefsState] = useState<Prefs>(DEFAULTS);
   const [needsOnboarding, setNeeds] = useState(false);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     const p = load();
     setPrefsState(p);
+    setReady(true);
     if (status !== "authenticated") return;
     (async () => {
       const r = await fetch("/api/prefs");
@@ -53,10 +63,12 @@ export default function PrefsProvider({ children }: { children: React.ReactNode 
     })();
   }, [status]);
 
+  // Erst nach load() schreiben, sonst blitzt der Startwert ueber die Systemvorgabe.
   useEffect(() => {
+    if (!ready) return;
     document.documentElement.dataset.theme = prefs.theme;
     document.documentElement.lang = prefs.lang;
-  }, [prefs.theme, prefs.lang]);
+  }, [ready, prefs.theme, prefs.lang]);
 
   const setPrefs = useCallback((patch: Partial<Prefs>) => {
     setPrefsState((old) => {

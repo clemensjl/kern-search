@@ -68,7 +68,7 @@ export default function Collections() {
       <h2>Collections</h2>
       <p className="sub">{en ? "Your saved items, grouped by list." : "Deine gespeicherten Items, sortiert nach Liste."}</p>
       <form onSubmit={addCol} style={{ display: "flex", gap: 8, marginBottom: 22 }}>
-        <input style={{ flex: 1, fontFamily: "var(--font-body)", fontSize: 15, padding: "10px 12px", border: "1.5px solid var(--line-strong)", borderRadius: 6 }}
+        <input style={{ flex: 1, fontFamily: "var(--font-ui)", fontSize: "1rem", minHeight: 44, padding: "10px 12px", border: "1px solid var(--line)", borderRadius: 6, background: "var(--surface-2)", color: "var(--text)" }}
           placeholder={en ? "New collection …" : "Neue Collection …"} value={newName}
           maxLength={60} onChange={(e) => setNewName(e.target.value)} />
         <button className="btn ghost" type="submit">{en ? "Create" : "Anlegen"}</button>
@@ -79,7 +79,7 @@ export default function Collections() {
           <section key={c.id} style={{ marginBottom: 28 }}>
             <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 8 }}>
               <h2 style={{ fontSize: 20 }}>{c.name}</h2>
-              <span style={{ color: "var(--muted)", fontSize: 12, fontFamily: "var(--font-mono)" }}>{ci.length} Items</span>
+              <span style={{ color: "var(--text-2)", fontSize: 12, fontFamily: "var(--font-data)" }}>{ci.length} Items</span>
               <button className="smallbtn" style={{ marginLeft: "auto" }} onClick={() => removeCol(c.id)}>
                 {en ? "Delete collection" : "Collection löschen"}
               </button>
