@@ -133,7 +133,7 @@ def worker(pid: str):
         done = counters["ok"] + counters["dead"] + counters["unknown"]
         if done % 200 == 0:
             linkstatus.save(STATUS, status)
-            META.write_text(json.dumps(meta), encoding="utf-8")
+            linkstatus.save_lines(META, meta)
             print(f"  {done} geprueft: {counters['ok']} ok, {counters['dead']} tot, {counters['unknown']} unklar, {len(meta)} meta", flush=True)
     time.sleep(random.uniform(0.4, 0.9))
 
@@ -196,7 +196,7 @@ def main():
     with ThreadPoolExecutor(max_workers=WORKERS) as ex:
         list(ex.map(worker, rest))
     linkstatus.save(STATUS, status)
-    META.write_text(json.dumps(meta), encoding="utf-8")
+    linkstatus.save_lines(META, meta)
     print(f"fertig: {counters['ok']} ok, {counters['dead']} tot, {counters['unknown']} unklar, {len(meta)} meta")
 
 

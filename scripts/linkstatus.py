@@ -13,7 +13,8 @@ juengeres waere gelogen, deshalb dieser Stichtag.
 
 check_links.py, merge_linkcheck.py, prune_dead.py und compact.py lesen und
 schreiben ausschliesslich ueber dieses Modul, damit die vier Skripte nicht
-auseinanderlaufen.
+auseinanderlaufen. drive_remote_check.py nutzt zumindest das Schreibformat
+(save_lines), damit data/item_meta.json ueberall gleich abgelegt wird.
 """
 import json
 from datetime import date, datetime
@@ -45,10 +46,31 @@ def load(path: Path) -> dict[str, list]:
     return out
 
 
-def save(path: Path, data: dict[str, list]) -> None:
-    Path(path).write_text(
-        json.dumps(data, separators=(",", ":")), encoding="utf-8"
+def save_lines(path: Path, data: dict) -> None:
+    """Schreibt ein flaches Objekt mit einer Zeile je Eintrag, Schluessel
+    sortiert. Gueltiges JSON, nur anders umgebrochen.
+
+    Der Linkcheck-Workflow committet data/link_status.json und
+    data/item_meta.json alle zwei Stunden. Als Einzeiler kann git kein Delta
+    bilden und legt bei jedem Lauf die vollen Dateien neu ab - bei zusammen
+    gut 6 MB und zwoelf Laeufen taeglich waechst das Pack um zweistellige
+    Megabyte pro Tag, dauerhaft. Zeilenweise und sortiert aendert sich pro
+    Commit nur, was sich wirklich geaendert hat.
+
+    Der Wert bleibt bewusst kompakt auf seiner Zeile; json.dumps(indent=...)
+    waere hier falsch, weil es auch die Listen aufbricht und die Datei
+    verdreifacht.
+    """
+    body = ",\n".join(
+        f'{json.dumps(k, ensure_ascii=False)}:'
+        f'{json.dumps(v, ensure_ascii=False, separators=(",", ":"))}'
+        for k, v in sorted(data.items())
     )
+    Path(path).write_text(f"{{\n{body}\n}}\n" if body else "{}\n", encoding="utf-8")
+
+
+def save(path: Path, data: dict[str, list]) -> None:
+    save_lines(path, data)
 
 
 def final_only(data: dict[str, list]) -> dict[str, list]:

@@ -39,7 +39,7 @@ def main():
     # unknown-Reste rauswerfen: naechste Runde prueft sie neu
     status = linkstatus.final_only(status)
     linkstatus.save(STATUS, status)
-    META.write_text(json.dumps(meta), encoding="utf-8")
+    linkstatus.save_lines(META, meta)
 
     data = json.loads(ITEMS.read_text(encoding="utf-8"))
     items = data["items"] if isinstance(data, dict) else data
