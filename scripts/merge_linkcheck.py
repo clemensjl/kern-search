@@ -6,6 +6,8 @@ import json
 import sys
 from pathlib import Path
 
+import jsonstore
+
 ROOT = Path(__file__).resolve().parent.parent
 STATUS = ROOT / "data" / "link_status.json"
 META = ROOT / "data" / "item_meta.json"
@@ -24,8 +26,8 @@ def main():
         meta.update(json.loads(f.read_text(encoding="utf-8")))
     # unknown-Reste rauswerfen: naechste Runde prueft sie neu
     status = {k: v for k, v in status.items() if v in ("ok", "dead")}
-    STATUS.write_text(json.dumps(status), encoding="utf-8")
-    META.write_text(json.dumps(meta), encoding="utf-8")
+    jsonstore.save_lines(STATUS, status)
+    jsonstore.save_lines(META, meta)
 
     data = json.loads(ITEMS.read_text(encoding="utf-8"))
     items = data["items"] if isinstance(data, dict) else data

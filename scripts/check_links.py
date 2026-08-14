@@ -20,6 +20,8 @@ from pathlib import Path
 
 import requests
 
+import jsonstore
+
 ROOT = Path(__file__).resolve().parent.parent
 ITEMS = ROOT / "site" / "items.json"
 STATUS = ROOT / "data" / "link_status.json"
@@ -122,8 +124,8 @@ def worker(pid: str):
             counters["err_streak"] = 0
         done = counters["ok"] + counters["dead"] + counters["unknown"]
         if done % 200 == 0:
-            STATUS.write_text(json.dumps(status), encoding="utf-8")
-            META.write_text(json.dumps(meta), encoding="utf-8")
+            jsonstore.save_lines(STATUS, status)
+            jsonstore.save_lines(META, meta)
             print(f"  {done} geprueft: {counters['ok']} ok, {counters['dead']} tot, {counters['unknown']} unklar, {len(meta)} meta", flush=True)
     time.sleep(random.uniform(0.4, 0.9))
 
@@ -165,14 +167,14 @@ def main():
         list(ex.map(worker, sample))
     checked = counters["ok"] + counters["dead"] + counters["unknown"]
     if checked and counters["dead"] / max(checked, 1) > 0.7:
-        STATUS.write_text(json.dumps(status), encoding="utf-8")
+        jsonstore.save_lines(STATUS, status)
         raise SystemExit("ABBRUCH: >70% als tot erkannt - Marker/Blocking pruefen.")
 
     rest = todo[150:]
     with ThreadPoolExecutor(max_workers=WORKERS) as ex:
         list(ex.map(worker, rest))
-    STATUS.write_text(json.dumps(status), encoding="utf-8")
-    META.write_text(json.dumps(meta), encoding="utf-8")
+    jsonstore.save_lines(STATUS, status)
+    jsonstore.save_lines(META, meta)
     print(f"fertig: {counters['ok']} ok, {counters['dead']} tot, {counters['unknown']} unklar, {len(meta)} meta")
 
 
