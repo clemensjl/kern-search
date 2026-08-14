@@ -23,8 +23,14 @@ THUMBS.mkdir(exist_ok=True)
 SIZE = 320
 HEADERS = {"User-Agent": "Mozilla/5.0", "Referer": "https://docs.google.com/"}
 GOOGLE_IMG = re.compile(r"^https://(lh\d+\.googleusercontent\.com|docs\.google\.com)/")
-# lh*.googleusercontent liefert ohne CORP-Header -> direkt hotlinken statt hosten
-HOTLINK = re.compile(r"^https://lh\d+\.googleusercontent\.com/")
+# Nur die /d/-Form von lh*.googleusercontent liefert ohne CORP-Header aus und
+# ist damit hotlinkbar (Stichprobe 08/2026: 8/8 HTTP 200 mit Bilddaten).
+HOTLINK = re.compile(r"^https://lh\d+\.googleusercontent\.com/d/")
+# Die /docsubipk/-Form ist dauerhaft tot: HTTP 403 serverseitig, im Browser
+# zusaetzlich ERR_BLOCKED_BY_ORB. Stichprobe 08/2026: 20/20 tot, sowohl roh
+# als auch in der =s512-Variante. Nicht laden, nicht hotlinken - leeres "i",
+# die Oberflaeche zeigt dann den Buchstaben-Platzhalter.
+DEAD_IMG = re.compile(r"^https://lh\d+\.googleusercontent\.com/docsubipk/")
 SIZE_SUFFIX = re.compile(r"=[swh]\d+(-[hwp][\d-]*)*$")
 
 
@@ -62,9 +68,14 @@ def main():
     data = json.loads(ITEMS.read_text(encoding="utf-8"))
     items = data["items"] if isinstance(data, dict) else data
     urls = sorted({it["i"] for it in items if it["i"] and it["i"].startswith("http")})
-    mapping = {u: hires(u) for u in urls if HOTLINK.match(u)}
+    mapping = {u: "" for u in urls if DEAD_IMG.match(u)}
+    n_dead = len(mapping)
+    mapping.update({u: hires(u) for u in urls if HOTLINK.match(u)})
     to_fetch = [u for u in urls if u not in mapping]
-    print(f"{len(urls)} Bild-URLs ({len(mapping)} hotlink, {len(to_fetch)} lokal)")
+    print(
+        f"{len(urls)} Bild-URLs ({len(mapping) - n_dead} hotlink, "
+        f"{n_dead} tot uebersprungen, {len(to_fetch)} lokal)"
+    )
     done = 0
     with ThreadPoolExecutor(max_workers=16) as ex:
         for url, local in ex.map(grab, to_fetch):
