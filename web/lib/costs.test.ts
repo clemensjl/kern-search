@@ -112,8 +112,11 @@ test("Gewichtseingabe: Komma wie Punkt, Unsinn wird NaN", () => {
   assert.ok(Number.isNaN(parseWeight("schwer")));
 });
 
-test("ohne gesetzte Umgebungsvariable bleibt der Link unveraendert", () => {
-  assert.equal(affiliateActive(), false);
+// Frueher stand hier affiliateActive() === false, weil keine Kennung im Repo lag.
+// Die sechs Kennungen stehen jetzt in lib/affiliate.ts, deshalb ist die Kennzeichnung
+// aktiv. Was unveraendert gilt: ein Agent ohne Eintrag bekommt nichts angehaengt.
+test("Agent ohne Eintrag bleibt unveraendert, Kennzeichnung ist aktiv", () => {
+  assert.equal(affiliateActive(), true);
   const u = "https://kakobuy.com/item/details?url=https%3A%2F%2Fweidian.com";
   assert.equal(withAffiliate("Kakobuy", u), u);
 });
