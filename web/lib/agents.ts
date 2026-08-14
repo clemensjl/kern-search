@@ -1,5 +1,7 @@
 // Agent-/QC-Link-Templates, verifiziert Jul 2026. Litbuy = Favorit.
 // {id} = Item-ID, {url} = urlencodierte Original-URL. pf: wd|tb|al
+// Provisionskennungen stehen zentral in lib/affiliate.ts (Env-gesteuert).
+import { withAffiliate } from "./affiliate";
 
 export type Item = {
   n: string; b?: string; c: string; i?: string; s?: string;
@@ -14,7 +16,8 @@ export type Agent = { n: string; fav?: boolean; t: Tpl };
 
 export const AGENTS: Agent[] = [
   { n: "Litbuy", fav: true, t: { wd: "https://litbuy.com/products/details?id={id}&channel=WEIDIAN", tb: "https://litbuy.com/products/details?id={id}&channel=TAOBAO", al: "https://litbuy.com/products/details?id={id}&channel=1688" } },
-  { n: "Kakobuy", t: { "*": "https://www.kakobuy.com/item/details?url={url}" } },
+  // Apex statt www: www.kakobuy.com antwortet aus AT auf der Wurzel mit 451.
+  { n: "Kakobuy", t: { "*": "https://kakobuy.com/item/details?url={url}" } },
   { n: "ACBuy", t: { wd: "https://www.acbuy.com/product?id={id}&source=WD", tb: "https://www.acbuy.com/product?id={id}&source=TB", al: "https://www.acbuy.com/product?id={id}&source=AL" } },
   { n: "Mulebuy", t: { wd: "https://mulebuy.com/product/?shop_type=weidian&id={id}", tb: "https://mulebuy.com/product/?shop_type=taobao&id={id}", al: "https://mulebuy.com/product/?shop_type=ali_1688&id={id}" } },
   { n: "Oopbuy", t: { wd: "https://www.oopbuy.com/product/weidian/{id}", tb: "https://www.oopbuy.com/product/1/{id}", al: "https://www.oopbuy.com/product/0/{id}" } },
@@ -41,7 +44,7 @@ export const AGENTS: Agent[] = [
 export const QCDBS: Agent[] = [
   { n: "FindQC", t: { wd: "https://findqc.com/detail/WD/{id}", tb: "https://findqc.com/detail/TB/{id}", al: "https://findqc.com/detail/AL/{id}" } },
   { n: "JadeShip", t: { wd: "https://www.jadeship.com/item/weidian/{id}", tb: "https://www.jadeship.com/item/taobao/{id}", al: "https://www.jadeship.com/item/1688/{id}" } },
-  { n: "Kakobuy QC", t: { "*": "https://www.kakobuy.com/item/details?url={url}" } },
+  { n: "Kakobuy QC", t: { "*": "https://kakobuy.com/item/details?url={url}" } },
   { n: "Litbuy QC", t: { wd: "https://litbuy.com/products/details?id={id}&channel=WEIDIAN", tb: "https://litbuy.com/products/details?id={id}&channel=TAOBAO", al: "https://litbuy.com/products/details?id={id}&channel=1688" } },
   { n: "Oopbuy QC", t: { wd: "https://www.oopbuy.com/product/weidian/{id}", tb: "https://www.oopbuy.com/product/1/{id}", al: "https://www.oopbuy.com/product/0/{id}" } },
   { n: "Hoobuy QC", t: { wd: "https://hoobuy.com/product/2/{id}", tb: "https://hoobuy.com/product/1/{id}", al: "https://hoobuy.com/product/0/{id}" } },
@@ -61,7 +64,7 @@ export function fillTpl(tpl: string, it: Item): string {
 
 export function agentLink(a: Agent, it: Item): string | null {
   const tpl = it.pf ? a.t[it.pf] || a.t["*"] : rawUrl(it) ? a.t["*"] : null;
-  return tpl ? fillTpl(tpl, it) : null;
+  return tpl ? withAffiliate(a.n, fillTpl(tpl, it)) : null;
 }
 
 export function itemKey(it: Item): string {

@@ -42,3 +42,6 @@ next-env.d.ts
 
 .vercel
 .env*
+
+# Beispieldatei muss ins Repo, sie dokumentiert die Provisionsvariablen
+!.env.local.example
