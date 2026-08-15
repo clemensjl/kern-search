@@ -156,7 +156,10 @@ select:hover{border-color:var(--line-strong)}
   .chip-rail__nav::after{content:"";position:absolute;inset:-6px}
   .chip-rail__nav:hover{border-color:var(--line-strong);color:var(--text)}
   .chip-rail__nav:active{background:var(--surface-3);border-color:var(--line-strong)}
-  .chip-rail__nav:disabled{color:var(--text-3);cursor:default;pointer-events:none}
+  /* Am Ende angekommen: der Knopf behaelt seinen Platz, damit die Leiste nicht
+     springt, verliert aber Rahmen und Flaeche. Nur die Textfarbe zu daempfen
+     reichte nicht - er las sich weiter als bedienbar und tat nichts. */
+  .chip-rail__nav:disabled{color:var(--text-3);border-color:transparent;background:none;cursor:default;pointer-events:none}
 }
 .chip{position:relative;display:inline-flex;align-items:center;gap:4px;font-family:var(--font-ui),sans-serif;font-weight:560;font-size:11px;letter-spacing:.04em;text-transform:uppercase;height:32px;padding:0 12px;border:1px solid var(--line);border-radius:999px;background:var(--surface-2);color:var(--text-2);cursor:pointer;white-space:nowrap;text-decoration:none;transition:border-color .14s,color .14s,background-color .14s}
 /* 32px sichtbar, 44px Trefferflaeche. Breite liegt bereits ueber 44px. */
