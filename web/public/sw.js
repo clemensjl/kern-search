@@ -32,6 +32,26 @@ const DATA_HOST = "clemensjl.github.io";
 // gegen das Quota. Deshalb niedrig angesetzt und streng nach aeltestem Eintrag geraeumt.
 const IMAGE_LIMIT = 120;
 
+// Obergrenze fuer den Shell-Cache, aus demselben Grund.
+// VERSION bleibt bewusst auf "v1": der Cache-Name darf sich nicht pro Deploy
+// aendern, sonst verliert jeder Bestandsnutzer beim naechsten Besuch seinen
+// kompletten Cache. Die Kehrseite: diese Datei aendert sich zwischen Deploys
+// nicht, also feuert "activate" nicht, und die Aufraeumschleife dort sieht die
+// Reste alter Builds nie. /_next/static traegt den Build-Hash in der URL, jeder
+// Deploy legt also neue Schluessel an und die alten bleiben liegen. Ohne Grenze
+// waechst der Shell-Cache damit unbegrenzt und frisst dasselbe Quota, an dem
+// auch der Bildcache haengt. Deshalb wird hier bei jedem Schreibvorgang
+// geraeumt, nicht erst bei einem SW-Wechsel.
+// Grosszuegig bemessen: ein Build hat ~25 Chunks, dazu 17 Navigationsziele.
+// Faellt doch ein noch benutzter Chunk raus, holt ihn der naechste Abruf neu -
+// spuerbar ist das nur offline, und das ist der billigere Fehler.
+const SHELL_LIMIT = 80;
+
+// Precache-Eintraege duerfen nie geraeumt werden. Sie stehen als aelteste im
+// Cache und waeren beim Trimmen die ersten - ausgerechnet /offline.html, also
+// der Rueckfall selbst.
+const PROTECTED = PRECACHE.map((u) => new URL(u, self.location.origin).href);
+
 self.addEventListener("install", (event) => {
   event.waitUntil(
     (async () => {
@@ -85,12 +105,13 @@ function isStorable(res) {
 async function trimCache(cacheName, limit) {
   const cache = await caches.open(cacheName);
   const keys = await cache.keys(); // Reihenfolge entspricht der Einfuegereihenfolge
-  for (let i = 0; i < keys.length - limit; i++) await cache.delete(keys[i]);
+  const loose = keys.filter((r) => !PROTECTED.includes(r.url));
+  for (let i = 0; i < loose.length - limit; i++) await cache.delete(loose[i]);
 }
 
 // Cache-First mit Aktualisierung im Hintergrund.
 // key trennt Cache-Schluessel von der tatsaechlichen Anfrage (Navigationen ohne Query).
-async function staleWhileRevalidate(event, request, cacheName, key, revalidate) {
+async function staleWhileRevalidate(event, request, cacheName, key, revalidate, limit) {
   const cache = await caches.open(cacheName);
   const cacheKey = key || request;
   const cached = await cache.match(cacheKey);
@@ -101,7 +122,19 @@ async function staleWhileRevalidate(event, request, cacheName, key, revalidate) 
 
   const network = fetch(request)
     .then(async (res) => {
-      if (isStorable(res)) await cache.put(cacheKey, res.clone());
+      if (isStorable(res)) {
+        // Eigenes try/catch: ein voller Cache wirft hier QuotaExceededError.
+        // Ohne diese Klammer faengt das .catch unten den Schreibfehler mit und
+        // macht aus einer erfolgreich geholten Antwort ein undefined - der
+        // Aufrufer saehe dann trotz funktionierender Verbindung "offline".
+        // Der Abruf selbst ist gueltig, egal ob er sich speichern liess.
+        try {
+          await cache.put(cacheKey, res.clone());
+          if (limit) await trimCache(cacheName, limit);
+        } catch {
+          /* Quota oder nicht speicherbare Antwort: die Antwort geht trotzdem raus. */
+        }
+      }
       return res;
     })
     .catch(() => undefined);
@@ -154,8 +187,11 @@ async function imageCacheFirst(event, request) {
   // opaque zurueck. Fuer die reine Anzeige reicht das, nur "error" wird verworfen.
   if (res && res.type !== "error" && (res.status === 200 || res.status === 0)) {
     const copy = res.clone();
+    // .catch ist Pflicht: bei vollem Quota wirft put, und ohne Fang bleibt eine
+    // unbehandelte Promise-Ablehnung im Worker stehen. Das Bild ist schon
+    // unterwegs zum Aufrufer, der Schreibfehler darf folgenlos bleiben.
     event.waitUntil(
-      cache.put(request, copy).then(() => trimCache(IMAGE_CACHE, IMAGE_LIMIT)),
+      cache.put(request, copy).then(() => trimCache(IMAGE_CACHE, IMAGE_LIMIT)).catch(() => {}),
     );
   }
   return res;
@@ -185,7 +221,16 @@ self.addEventListener("fetch", (event) => {
     // Ohne Query als Schluessel, sonst legt jede Suchanfrage eine eigene Kopie an.
     const key = new Request(url.origin + url.pathname);
     event.respondWith(
-      staleWhileRevalidate(event, request, SHELL_CACHE, key, true).catch(async () => {
+      staleWhileRevalidate(event, request, SHELL_CACHE, key, true, SHELL_LIMIT).catch(async () => {
+        // Wie in allen anderen Zweigen zuerst das nackte Netz. Ein Fehler im
+        // Cache-Pfad darf nie die Offline-Seite ausloesen, solange die
+        // Verbindung steht; erst wenn auch der direkte Abruf scheitert, ist der
+        // Nutzer wirklich offline.
+        try {
+          return await fetch(request);
+        } catch {
+          /* wirklich kein Netz */
+        }
         const fallback = await caches.match(OFFLINE_URL);
         return (
           fallback ||
@@ -218,7 +263,7 @@ self.addEventListener("fetch", (event) => {
   if (sameOrigin) {
     const immutable = url.pathname.startsWith("/_next/static/");
     event.respondWith(
-      staleWhileRevalidate(event, request, SHELL_CACHE, null, !immutable).catch(() =>
+      staleWhileRevalidate(event, request, SHELL_CACHE, null, !immutable, SHELL_LIMIT).catch(() =>
         fetch(request),
       ),
     );
