@@ -312,6 +312,18 @@ body.is-locked{overflow:hidden}
 .btn--ghost{background:transparent;color:var(--text);border-color:var(--line-strong)}
 .btn--ghost:hover{background:var(--surface-2);border-color:var(--text-3);color:var(--text)}
 
+/* Gilt ausdruecklich nur fuer dekorative Zustandswechsel (Hover-Fades, Farb-
+   und Schattenuebergaenge). Die Regel kappt bloss Dauern und laesst End- wie
+   Startwerte unangetastet - fuer alles, was eine Flaeche verschiebt oder ein
+   Layout aufbaut, ist das kein brauchbarer Reduced-Motion-Pfad: die Bewegung
+   passiert dann in .01ms statt gar nicht, und ein unterbrochener Uebergang
+   kann auf einem falschen Wert stehenbleiben.
+   Gestengetriebene Flaechen brauchen deshalb einen eigenen Pfad in JS, der
+   die Bewegung ersetzt statt sie zu beschleunigen - siehe die Feder in
+   components/Sheet.tsx, die bei reduce direkt auf den Zielwert springt.
+   Wer hier eine layoutrelevante Transition einhaengt, umgeht diese Regel
+   still. Neue Transitions dieser Art gehoeren nach Sheet.tsx-Vorbild
+   behandelt, nicht in diesen Block. */
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{
     animation-duration:.01ms!important;
