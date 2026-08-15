@@ -12,6 +12,31 @@ const RESIST = 0.35;        // Widerstand ueber die obere Kante hinaus
 const FOCUSABLE =
   'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
 
+// Zwei Sheets koennen gleichzeitig offen sein: ein frisch angemeldeter Nutzer
+// ohne gespeicherte Prefs, der einen geteilten Link "?item=..." oeffnet, sieht
+// Onboarding und Detail parallel (app/page.tsx). Ohne modulweite Buchfuehrung
+// nimmt die zuerst geschlossene Instanz zurueck, was die andere noch braucht:
+// die Scrollsperre verschwindet, obwohl noch ein Sheet offen ist, und ein
+// einziges Escape schliesst beide.
+//
+// Reihenfolge im Stapel = Mount-Reihenfolge = DOM-Reihenfolge der Hosts am
+// body, also auch die Stapelreihenfolge auf dem Schirm. Das letzte Element ist
+// damit das oberste Sheet.
+const openSheets: object[] = [];
+
+// inert wird pro Element gezaehlt, nicht pro Sheet gesetzt und geloescht.
+const inertCount = new WeakMap<Element, number>();
+function setInert(el: Element, delta: number) {
+  const n = (inertCount.get(el) || 0) + delta;
+  if (n > 0) {
+    inertCount.set(el, n);
+    el.setAttribute("inert", "");
+  } else {
+    inertCount.delete(el);
+    el.removeAttribute("inert");
+  }
+}
+
 export type SheetProps = {
   title: string;
   onClose: () => void;
@@ -36,20 +61,29 @@ export default function Sheet({ title, onClose, children, footer, wide }: SheetP
   const dragRef = useRef<{ id: number; startY: number; baseY: number; s: { t: number; y: number }[] } | null>(null);
   const closeRef = useRef(onClose);
   closeRef.current = onClose;
+  // Identitaet dieser Instanz im Stapel. useRef, damit sie ueber Re-Render haelt.
+  const tokenRef = useRef<object>({});
 
   // Portal am body, damit der restliche Baum inert gesetzt werden kann.
   useEffect(() => {
+    const token = tokenRef.current;
     const el = document.createElement("div");
     el.className = "sheet-host";
     document.body.appendChild(el);
+    openSheets.push(token);
     const others = Array.from(document.body.children).filter((c) => c !== el && c.tagName !== "SCRIPT");
-    for (const o of others) o.setAttribute("inert", "");
-    document.body.classList.add("is-locked");
+    // Auch der Host eines darunterliegenden Sheets faellt hierunter und wird
+    // korrekt inert - der Zaehler haelt ihn so lange, wie dieses Sheet offen ist.
+    for (const o of others) setInert(o, 1);
+    if (openSheets.length === 1) document.body.classList.add("is-locked");
     const opener = document.activeElement as HTMLElement | null;
     setHost(el);
     return () => {
-      for (const o of others) o.removeAttribute("inert");
-      document.body.classList.remove("is-locked");
+      for (const o of others) setInert(o, -1);
+      const i = openSheets.indexOf(token);
+      if (i >= 0) openSheets.splice(i, 1);
+      // Erst wenn kein Sheet mehr offen ist, darf der Hintergrund wieder scrollen.
+      if (openSheets.length === 0) document.body.classList.remove("is-locked");
       el.remove();
       opener?.focus?.();
     };
@@ -114,7 +148,17 @@ export default function Sheet({ title, onClose, children, footer, wide }: SheetP
   useEffect(() => {
     if (!host) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") { e.preventDefault(); dismiss(); return; }
+      // Jede Instanz haengt einen eigenen Handler an document. Nur die oberste
+      // darf reagieren, sonst schliesst ein Escape alle offenen Sheets und die
+      // Tab-Falle zieht gegen das falsche Sheet.
+      if (openSheets[openSheets.length - 1] !== tokenRef.current) return;
+      if (e.key === "Escape") {
+        e.preventDefault();
+        // Hindert Handler weiterer Instanzen am selben Ziel daran, auch noch zu laufen.
+        e.stopImmediatePropagation();
+        dismiss();
+        return;
+      }
       if (e.key !== "Tab") return;
       const el = sheetRef.current;
       if (!el) return;
