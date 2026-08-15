@@ -26,7 +26,7 @@ jobs:
           st = json.load(open("data/link_status.json", encoding="utf-8"))
           items = json.load(open("site/items.json", encoding="utf-8"))["items"]
           pids = {i["pid"] for i in items if i.get("pf") == "wd" and i.get("pid")}
-          final = {k for k, v in st.items() if v in ("ok", "dead")}
+          final = {k for k, v in st.items() if (v[0] if isinstance(v, list) else v) in ("ok", "dead")}
           print(sum(1 for p in pids if f"wd:{p}" not in final))
           EOF
           )
