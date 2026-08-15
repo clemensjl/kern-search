@@ -7,6 +7,7 @@ import { usePrefs, type Theme } from "@/components/Prefs";
 import UserBar from "@/components/UserBar";
 import TabBar from "@/components/TabBar";
 import Sheet from "@/components/Sheet";
+import ChipStrip from "@/components/ChipStrip";
 import FilterSheet, { type Draft } from "@/components/FilterSheet";
 import DetailSheet from "@/components/DetailSheet";
 import { IcCheck, IcClose, IcFilter, IcGrid, IcPlus, IcRows, IcSearch, IcShield } from "@/components/Icons";
@@ -294,17 +295,7 @@ export default function Home() {
             )}
           </div>
 
-          <div className="chip-strip" role="group" aria-label="Kategorie">
-            <button className="chip" type="button" aria-pressed={cat === ""}
-              onClick={() => setCat("")}>{catLabel("Alle")}</button>
-            {cats.map((c) => (
-              <button key={c} type="button" aria-pressed={cat === c}
-                className={`chip${c === VERIFIED ? " chip--verified" : ""}`}
-                onClick={() => setCat(cat === c ? "" : c)}>
-                {c === VERIFIED && <IcShield size={13} />}{catLabel(c)}
-              </button>
-            ))}
-          </div>
+          <ChipStrip cats={cats} cat={cat} onPick={setCat} label={catLabel} verified={VERIFIED} />
 
           <div className="result-bar">
             <span className="result-bar__count" aria-live="polite">

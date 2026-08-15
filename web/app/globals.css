@@ -132,8 +132,32 @@ select{font-family:var(--font-data),ui-monospace,monospace;font-size:1rem;height
 select:hover{border-color:var(--line-strong)}
 
 /* ---- Chip-Leiste ---- */
-.chip-strip{display:flex;gap:8px;overflow-x:auto;padding:10px 0 6px;scrollbar-width:none;overscroll-behavior-x:contain}
+/* --chip-pad-top haelt die Pfeilknoepfe auf derselben Oberkante wie die Chips.
+   Die Knoepfe liegen ausserhalb des Scrollers, deshalb kann die Zeile sie
+   nicht ueber align-items:center treffen. */
+.chip-rail{--chip-pad-top:10px;display:flex;align-items:flex-start;gap:8px}
+.chip-scroll{position:relative;flex:1;min-width:0}
+.chip-strip{display:flex;gap:8px;overflow-x:auto;padding:var(--chip-pad-top) 0 6px;scrollbar-width:none;overscroll-behavior-x:contain}
 .chip-strip::-webkit-scrollbar{display:none}
+/* Verblassende Kante genau dort, wo noch Inhalt liegt. pointer-events:none ist
+   Pflicht: die Kante liegt ueber den Chips, darf ihnen aber keine Trefferflaeche
+   nehmen. Es wechselt nur die Deckkraft, die Flaeche selbst steht still. */
+.chip-scroll::before,.chip-scroll::after{content:"";position:absolute;top:0;bottom:0;width:36px;z-index:1;pointer-events:none;opacity:0;transition:opacity .14s}
+.chip-scroll::before{left:0;background:linear-gradient(to right,var(--surface-1),transparent)}
+.chip-scroll::after{right:0;background:linear-gradient(to left,var(--surface-1),transparent)}
+.chip-rail[data-l="1"] .chip-scroll::before{opacity:1}
+.chip-rail[data-r="1"] .chip-scroll::after{opacity:1}
+/* Ohne Ueberlauf gibt es nichts zu blaettern, dann verschwindet die Spalte
+   ganz und die Leiste steht wieder buendig wie zuvor. */
+.chip-rail__nav{display:none}
+@media(hover:hover) and (pointer:fine){
+  .chip-rail[data-of="1"] .chip-rail__nav{position:relative;display:inline-flex;align-items:center;justify-content:center;flex:none;align-self:flex-start;margin-top:var(--chip-pad-top);width:32px;height:32px;border:1px solid var(--line);border-radius:999px;background:var(--surface-2);color:var(--text-2);cursor:pointer;transition:border-color .14s,color .14s,background-color .14s}
+  /* 32px sichtbar, 44px Trefferflaeche */
+  .chip-rail__nav::after{content:"";position:absolute;inset:-6px}
+  .chip-rail__nav:hover{border-color:var(--line-strong);color:var(--text)}
+  .chip-rail__nav:active{background:var(--surface-3);border-color:var(--line-strong)}
+  .chip-rail__nav:disabled{color:var(--text-3);cursor:default;pointer-events:none}
+}
 .chip{position:relative;display:inline-flex;align-items:center;gap:4px;font-family:var(--font-ui),sans-serif;font-weight:560;font-size:11px;letter-spacing:.04em;text-transform:uppercase;height:32px;padding:0 12px;border:1px solid var(--line);border-radius:999px;background:var(--surface-2);color:var(--text-2);cursor:pointer;white-space:nowrap;text-decoration:none;transition:border-color .14s,color .14s,background-color .14s}
 /* 32px sichtbar, 44px Trefferflaeche. Breite liegt bereits ueber 44px. */
 .chip::after{content:"";position:absolute;inset:-6px 0}

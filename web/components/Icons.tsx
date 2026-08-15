@@ -52,6 +52,12 @@ export const IcMoon = ({ size }: P) => (
 export const IcArrow = ({ size }: P) => (
   <Svg size={size}><path d="M5 12h13m0 0-5-5m5 5-5 5" /></Svg>
 );
+export const IcChevronLeft = ({ size }: P) => (
+  <Svg size={size}><path d="m14.5 5-6 7 6 7" /></Svg>
+);
+export const IcChevronRight = ({ size }: P) => (
+  <Svg size={size}><path d="m9.5 5 6 7-6 7" /></Svg>
+);
 export const IcShuffle = ({ size }: P) => (
   <Svg size={size}><path d="M4 6h3l10 12h3M4 18h3l3-3.6M14 8.6 17 6h3" /><path d="M17.5 3.5 20.5 6l-3 2.5M17.5 15.5 20.5 18l-3 2.5" /></Svg>
 );
