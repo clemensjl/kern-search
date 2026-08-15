@@ -21,6 +21,7 @@ URL = "https://kina-search.vercel.app/api/check"
 KEY = sys.argv[1]
 BATCH = 20
 PAR = 8
+RUN_DAY = linkstatus.today()
 
 
 def check_batch(ids):
@@ -36,12 +37,18 @@ def check_batch(ids):
 
 
 def main():
-    status = json.loads(STATUS.read_text(encoding="utf-8")) if STATUS.exists() else {}
+    # Lesen und schreiben ausschliesslich ueber linkstatus, wie check_links.py.
+    # Roh gelesene Strings mit ["ok", "<datum>"] zu vergleichen ging bisher immer
+    # daneben, und ein nackter String als Wert haette den Formatmix in die Datei
+    # geschrieben: der naechste Lauf haette die frisch geprueften IDs auf
+    # LEGACY_DATE zurueckdatiert und sofort wieder als faellig eingestuft.
+    # final_only wirft "unknown" raus - genau die IDs, die hier neu drankommen.
+    status = linkstatus.final_only(linkstatus.load(STATUS))
     meta = json.loads(META.read_text(encoding="utf-8")) if META.exists() else {}
     data = json.loads(ITEMS.read_text(encoding="utf-8"))
     items = data["items"] if isinstance(data, dict) else data
     pids = sorted({it["pid"] for it in items if it.get("pf") == "wd" and it.get("pid")})
-    todo = [p for p in pids if f"wd:{p}" not in status or status[f"wd:{p}"] == "unknown"]
+    todo = [p for p in pids if f"wd:{p}" not in status]
     print(f"{len(todo)} offene IDs, Batches a {BATCH}, {PAR} parallel")
 
     batches = [todo[i:i + BATCH] for i in range(0, len(todo), BATCH)]
@@ -50,8 +57,8 @@ def main():
         for results in ex.map(check_batch, batches):
             for r in results:
                 k = f"wd:{r['id']}"
-                if r["s"] in ("ok", "dead"):
-                    status[k] = r["s"]
+                if r["s"] in linkstatus.FINAL:
+                    status[k] = [r["s"], RUN_DAY]
                     if r["s"] == "ok" and (r.get("img") or r.get("price")):
                         m = {}
                         if r.get("img"):
@@ -63,14 +70,14 @@ def main():
                     blocked += 1
             done += len(results)
             if done % 400 < BATCH:
-                linkstatus.save_lines(STATUS, status)
+                linkstatus.save(STATUS, status)
                 linkstatus.save_lines(META, meta)
-                ok = sum(1 for v in status.values() if v == "ok")
-                dead = sum(1 for v in status.values() if v == "dead")
+                ok = sum(1 for v in status.values() if v[0] == "ok")
+                dead = sum(1 for v in status.values() if v[0] == "dead")
                 print(f"  {done}/{len(todo)} | gesamt: {ok} ok, {dead} dead, blocked: {blocked}", flush=True)
 
-    status = {k: v for k, v in status.items() if v in ("ok", "dead")}
-    linkstatus.save_lines(STATUS, status)
+    status = linkstatus.final_only(status)
+    linkstatus.save(STATUS, status)
     linkstatus.save_lines(META, meta)
     rest = sum(1 for p in pids if f"wd:{p}" not in status)
     print(f"fertig; weiterhin offen: {rest}")

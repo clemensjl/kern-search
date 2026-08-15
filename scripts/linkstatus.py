@@ -11,10 +11,12 @@ erste Commit, in dem die Datei in Git auftaucht - die Pruefungen sind also
 nachweislich MINDESTENS so alt. Ein aelteres Datum ist nicht belegbar, ein
 juengeres waere gelogen, deshalb dieser Stichtag.
 
-check_links.py, merge_linkcheck.py, prune_dead.py und compact.py lesen und
-schreiben ausschliesslich ueber dieses Modul, damit die vier Skripte nicht
-auseinanderlaufen. drive_remote_check.py nutzt zumindest das Schreibformat
-(save_lines), damit data/item_meta.json ueberall gleich abgelegt wird.
+check_links.py, merge_linkcheck.py, prune_dead.py, compact.py und
+drive_remote_check.py lesen und schreiben ausschliesslich ueber dieses Modul,
+damit die Skripte nicht auseinanderlaufen. Wer link_status.json roh liest,
+vergleicht Strings gegen Listen und schreibt frueher oder spaeter einen
+Formatmix zurueck - der naechste Lauf datiert diese Eintraege dann auf
+LEGACY_DATE zurueck und prueft sie sofort wieder.
 """
 import json
 from datetime import date, datetime
