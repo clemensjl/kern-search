@@ -1,6 +1,7 @@
 "use client";
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
+import { AGENTS } from "@/lib/agents";
 import type { Lang } from "@/lib/i18n";
 import type { Cur } from "@/lib/data";
 
@@ -24,12 +25,22 @@ const Ctx = createContext<{
 
 export const usePrefs = () => useContext(Ctx);
 
+// Die Agentenliste ist von 21 auf 6 geschrumpft. Ein Bestandsnutzer mit einem
+// gestrichenen Agenten (z. B. "mulebuy") bekommt seine Links ueber AGENTS[0],
+// waehrend Filter- und Onboarding-Sheet nur auf Gleichheit vergleichen und
+// deshalb keinen Eintrag als gewaehlt zeigen. Kein Absturz, aber ein
+// widerspruechlicher Zustand - deshalb einmal beim Laden geradeziehen.
+function normalizeAgent(agent: string): string {
+  return AGENTS.some((a) => a.n.toLowerCase() === agent) ? agent : DEFAULTS.agent;
+}
+
 function load(): Prefs {
   if (typeof window === "undefined") return DEFAULTS;
   // Gespeicherte Wahl steht hinter der Systemvorgabe und gewinnt deshalb.
   const base: Prefs = { ...DEFAULTS, theme: systemTheme() };
   try {
-    return { ...base, ...JSON.parse(localStorage.getItem("prefs") || "{}") };
+    const p: Prefs = { ...base, ...JSON.parse(localStorage.getItem("prefs") || "{}") };
+    return { ...p, agent: normalizeAgent(p.agent) };
   } catch {
     return base;
   }
@@ -53,7 +64,7 @@ export default function PrefsProvider({ children }: { children: React.ReactNode 
       if (d.currency) {
         const merged: Prefs = {
           cur: d.currency ?? p.cur, lang: d.language ?? p.lang,
-          theme: d.theme ?? p.theme, agent: d.agent ?? p.agent,
+          theme: d.theme ?? p.theme, agent: normalizeAgent(d.agent ?? p.agent),
         };
         setPrefsState(merged);
         localStorage.setItem("prefs", JSON.stringify(merged));
