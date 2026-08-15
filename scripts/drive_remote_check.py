@@ -10,7 +10,7 @@ from pathlib import Path
 
 import requests
 
-import jsonstore
+import linkstatus
 
 ROOT = Path(__file__).resolve().parent.parent
 ITEMS = ROOT / "site" / "items.json"
@@ -63,15 +63,15 @@ def main():
                     blocked += 1
             done += len(results)
             if done % 400 < BATCH:
-                jsonstore.save_lines(STATUS, status)
-                jsonstore.save_lines(META, meta)
+                linkstatus.save_lines(STATUS, status)
+                linkstatus.save_lines(META, meta)
                 ok = sum(1 for v in status.values() if v == "ok")
                 dead = sum(1 for v in status.values() if v == "dead")
                 print(f"  {done}/{len(todo)} | gesamt: {ok} ok, {dead} dead, blocked: {blocked}", flush=True)
 
     status = {k: v for k, v in status.items() if v in ("ok", "dead")}
-    jsonstore.save_lines(STATUS, status)
-    jsonstore.save_lines(META, meta)
+    linkstatus.save_lines(STATUS, status)
+    linkstatus.save_lines(META, meta)
     rest = sum(1 for p in pids if f"wd:{p}" not in status)
     print(f"fertig; weiterhin offen: {rest}")
 

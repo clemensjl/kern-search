@@ -1,3 +1,5 @@
+import { affiliateActive } from "./affiliate";
+
 export type Lang = "de" | "en";
 
 const S = {
@@ -20,6 +22,9 @@ const S = {
     ob_agent_sub: "Produktlinks öffnen direkt bei deinem Agent.",
     ob_light: "Hell", ob_dark: "Dunkel", ob_done: "Los geht's",
     no_price: "Kein Preis angegeben",
+    aff_note: "Werbung: Die Agenten-Links enthalten eine Provisionskennung. Bei einem Kauf erhalten wir einen Anteil der Agenturgebühr.",
+    aff_footer: "Werbehinweis: Die Agenten-Links auf dieser Seite sind Provisionslinks. Bei einem Kauf über diese Links erhalten wir eine Provision vom jeweiligen Agenten.",
+    calc_nav: "Endpreis",
   },
   en: {
     search_ph: "Search: brand, model, category …",
@@ -40,11 +45,18 @@ const S = {
     ob_agent_sub: "Product links open directly at your agent.",
     ob_light: "Light", ob_dark: "Dark", ob_done: "Let's go",
     no_price: "No price listed",
+    aff_note: "Advertising: agent links carry an affiliate ID. If you buy, we receive a share of the agent fee.",
+    aff_footer: "Advertising notice: the agent links on this page are affiliate links. If you buy through them, the agent pays us a commission.",
+    calc_nav: "Final price",
   },
 } as const;
 
 export type TKey = keyof typeof S.de;
 
 export function t(lang: Lang, key: TKey): string {
-  return (S[lang] as Record<string, string>)[key] ?? S.de[key];
+  const v = (S[lang] as Record<string, string>)[key] ?? S.de[key];
+  // Kennzeichnungspflicht: der Provisionshinweis haengt am Footer, damit er auf
+  // jeder Seite steht. Erscheint nur, wenn wirklich eine Kennung gesetzt ist.
+  if (key === "footer" && affiliateActive()) return `${v} ${t(lang, "aff_footer")}`;
+  return v;
 }

@@ -5,9 +5,16 @@ Live-Erkennung: Weidian rendert bei existierenden Items einen SSR-Datenblob
 (u.a. &#34;shopName&#34;) ins HTML; bei geloeschten Items fehlt er.
 Taobao/1688 sind ohne Login nicht zuverlaessig pruefbar -> bleiben ungeprueft.
 
-Ergebnis: data/link_status.json  {"wd:<id>": "ok"|"dead"}
+Ergebnis: data/link_status.json  {"wd:<id>": ["ok"|"dead", "YYYY-MM-DD"]}
           data/item_meta.json    {"wd:<id>": {"img": url, "price": cny}}
 Danach: enrich.py (Bilder/Preise auffuellen), prune_dead.py (tote Items raus).
+
+Das Pruefdatum ist kein Beiwerk: compact.py macht daraus das Feld "lc" in der
+ausgelieferten items.json, aus dem die Oberflaeche die Frischeangabe bildet.
+
+Rollierend pruefen (--max-age/--limit): 40k Items lassen sich nicht bei jedem
+Build anfassen. Mit --max-age N gilt eine Pruefung N Tage als gueltig, --limit
+deckelt den Lauf. Reihenfolge: nie geprueft zuerst, dann die aeltesten.
 """
 import html as htmllib
 import json
@@ -20,7 +27,7 @@ from pathlib import Path
 
 import requests
 
-import jsonstore
+import linkstatus
 
 ROOT = Path(__file__).resolve().parent.parent
 ITEMS = ROOT / "site" / "items.json"
@@ -36,8 +43,9 @@ HEADERS = {"User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)
 WORKERS = 3
 
 lock = threading.Lock()
-status: dict[str, str] = {}
+status: dict[str, list] = {}
 meta: dict[str, dict] = {}
+RUN_DAY = linkstatus.today()
 counters = {"ok": 0, "dead": 0, "unknown": 0, "err_streak": 0}
 local = threading.local()
 cooldown_until = 0.0
@@ -116,7 +124,7 @@ def worker(pid: str):
         return
     res = check(pid)
     with lock:
-        status[f"wd:{pid}"] = res
+        status[f"wd:{pid}"] = [res, RUN_DAY]
         counters[res] += 1
         if res == "unknown":
             counters["err_streak"] += 1
@@ -124,8 +132,8 @@ def worker(pid: str):
             counters["err_streak"] = 0
         done = counters["ok"] + counters["dead"] + counters["unknown"]
         if done % 200 == 0:
-            jsonstore.save_lines(STATUS, status)
-            jsonstore.save_lines(META, meta)
+            linkstatus.save(STATUS, status)
+            linkstatus.save_lines(META, meta)
             print(f"  {done} geprueft: {counters['ok']} ok, {counters['dead']} tot, {counters['unknown']} unklar, {len(meta)} meta", flush=True)
     time.sleep(random.uniform(0.4, 0.9))
 
@@ -139,6 +147,10 @@ def main():
     ap.add_argument("--shards", type=int, default=1)
     ap.add_argument("--out-prefix", default="")
     ap.add_argument("--max-minutes", type=float, default=0)
+    ap.add_argument("--max-age", type=int, default=0,
+                    help="Pruefung gilt N Tage als gueltig; aeltere neu pruefen (0 = nie nachpruefen)")
+    ap.add_argument("--limit", type=int, default=0,
+                    help="hoechstens N IDs in diesem Lauf pruefen (0 = alle faelligen)")
     args = ap.parse_args()
     if args.max_minutes > 0:
         deadline[0] = time.time() + args.max_minutes * 60
@@ -153,12 +165,22 @@ def main():
         pids = pids[args.shard::args.shards]
     if META.exists():
         meta.update(json.loads(META.read_text(encoding="utf-8")))
-    if STATUS.exists():
-        # unknown-Eintraege erneut pruefen, nur ok/dead sind final
-        prev = json.loads(STATUS.read_text(encoding="utf-8"))
-        status.update({k: v for k, v in prev.items() if v != "unknown"})
-    todo = [p for p in pids if f"wd:{p}" not in status]
-    print(f"{len(pids)} Weidian-IDs, {len(todo)} noch zu pruefen", flush=True)
+    # unknown-Eintraege erneut pruefen, nur ok/dead sind final
+    status.update(linkstatus.final_only(linkstatus.load(STATUS)))
+
+    # Faelligkeit: ohne --max-age wie bisher nur die nie geprueften IDs,
+    # mit --max-age zusaetzlich die abgelaufenen, aelteste zuerst.
+    max_age = args.max_age if args.max_age > 0 else 10**6
+    todo = [k[3:] for k in linkstatus.due(status, [f"wd:{p}" for p in pids], max_age)]
+    faellig = len(todo)
+    if args.limit > 0:
+        todo = todo[: args.limit]
+    nie = sum(1 for p in pids if f"wd:{p}" not in status)
+    print(
+        f"{len(pids)} Weidian-IDs, {nie} nie geprueft, {faellig} faellig, "
+        f"{len(todo)} in diesem Lauf",
+        flush=True,
+    )
 
     # Sanity-Phase: wenn fast alles "dead" erkannt wird, stimmt der Marker
     # nicht oder wir sind geblockt -> Abbruch statt Datenmord
@@ -167,14 +189,14 @@ def main():
         list(ex.map(worker, sample))
     checked = counters["ok"] + counters["dead"] + counters["unknown"]
     if checked and counters["dead"] / max(checked, 1) > 0.7:
-        jsonstore.save_lines(STATUS, status)
+        linkstatus.save(STATUS, status)
         raise SystemExit("ABBRUCH: >70% als tot erkannt - Marker/Blocking pruefen.")
 
     rest = todo[150:]
     with ThreadPoolExecutor(max_workers=WORKERS) as ex:
         list(ex.map(worker, rest))
-    jsonstore.save_lines(STATUS, status)
-    jsonstore.save_lines(META, meta)
+    linkstatus.save(STATUS, status)
+    linkstatus.save_lines(META, meta)
     print(f"fertig: {counters['ok']} ok, {counters['dead']} tot, {counters['unknown']} unklar, {len(meta)} meta")
 
 

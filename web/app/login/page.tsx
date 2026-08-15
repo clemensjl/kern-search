@@ -31,7 +31,7 @@ export default function Login() {
       </button>
       {MAGIC_ENABLED ? (
         <>
-          <div style={{ margin: "18px 0", color: "var(--muted)", fontSize: 13 }}>oder</div>
+          <div style={{ margin: "18px 0", color: "var(--text-2)", fontSize: 13 }}>oder</div>
           {state === "sent" && (
             <div className="notice ok">Link verschickt. Öffne die E-Mail an {email} und klicke den Anmelde-Link.</div>
           )}
