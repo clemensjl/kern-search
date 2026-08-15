@@ -30,7 +30,7 @@ const display = Archivo({
 export const metadata: Metadata = {
   title: "Kina Search",
   description:
-    "Durchsuchbare Datenbank ueber 100.000+ Finds aus 75 Spreadsheets, mit Agent-Link-Converter, QC-Suche und Collections.",
+    "Durchsuchbare Datenbank mit knapp 40.000 Finds aus 75 Quellen, mit Agent-Link-Converter, QC-Suche und Collections.",
   // Kein icons-Feld mehr: dateibasierte Metadaten haben in Next hoehere Prioritaet
   // und wuerden es ohnehin ueberschreiben. app/favicon.ico und app/apple-icon.png
   // liefern jetzt beide echten Marken (erzeugt von scripts/gen-icons.mjs).

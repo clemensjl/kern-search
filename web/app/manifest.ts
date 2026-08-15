@@ -13,7 +13,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "Kina Search",
     short_name: "Kina",
     description:
-      "Durchsuchbare Datenbank ueber 100.000+ Finds aus 75 Spreadsheets, mit Agent-Link-Converter, QC-Suche und Collections.",
+      "Durchsuchbare Datenbank mit knapp 40.000 Finds aus 75 Quellen, mit Agent-Link-Converter, QC-Suche und Collections.",
     start_url: "/",
     scope: "/",
     display: "standalone",
