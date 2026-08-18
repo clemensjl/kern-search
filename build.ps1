@@ -22,6 +22,7 @@ $env:PYTHONIOENCODING = "utf-8"
 Set-Location $PSScriptRoot
 
 python scripts\fetch.py
+python scripts\resolve_short.py
 python scripts\parse.py
 python scripts\enrich.py
 python scripts\thumbs.py

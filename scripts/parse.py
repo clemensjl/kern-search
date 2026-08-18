@@ -27,7 +27,17 @@ SHOP_HOSTS = (
     "hoobuy.com", "loongbuy.com", "ponybuy.com", "basetao.com", "wegobuy.com",
     "itaobuy.com", "sifubuy.com", "eastmallbuy.com", "usfans.com", "lovegobuy.com",
     "ootdbuy.com", "panglobalbuy.com", "bbdbuy.com", "gjbuy.com", "vigorbuy.com",
+    "ikako.vip",
 )
+
+# Shortlink-Domains: das Ziel steht nicht in der URL, sondern in der von
+# resolve_short.py aufgebauten Map data/shortlink_map.json.
+SHORT_HOSTS = ("ikako.vip",)
+SHORT_MAP_PATH = ROOT / "data" / "shortlink_map.json"
+try:
+    SHORT_MAP = json.loads(SHORT_MAP_PATH.read_text(encoding="utf-8"))
+except OSError:
+    SHORT_MAP = {}
 
 PRICE_RE = re.compile(
     r"(?:[$€£¥￥]\s?\d[\d.,]*|\d[\d.,]*\s?(?:USD|EUR|CNY|RMB|GBP|\$|€|¥|￥)|(?:USD|EUR|CNY|RMB|GBP)\s?\d[\d.,]*)",
@@ -241,6 +251,12 @@ def extract_ref(u, depth=0):
     except ValueError:
         return "", ""
     host = p.netloc.lower()
+    # Shortlinks ueber die aufgeloeste Map weiterverfolgen
+    if any(host == h or host.endswith("." + h) for h in SHORT_HOSTS):
+        target = SHORT_MAP.get(u.split("?")[0].split("#")[0].rstrip("/"))
+        if target:
+            return extract_ref(target, depth + 1)
+        return "", ""
     # innere Original-URL aus Agent-Wrappern
     for k in ("url", "productLink", "goodsUrl", "product_link", "link", "goods_url"):
         if k in qs and qs[k] and unquote(qs[k][0]).startswith("http"):

@@ -11,7 +11,7 @@ TAB_RE = re.compile(r'items\.push\(\{name: "((?:[^"\\]|\\.)*)", pageUrl: "([^"]*
 SHOP_RE = re.compile(
     r"weidian\.com|taobao\.com|1688\.com|kakobuy|cnfans|mulebuy|acbuy|oopbuy|hoobuy|"
     r"joyagoo|superbuy|cssbuy|allchinabuy|basetao|orientdig|lovegobuy|ootdbuy|loongbuy|"
-    r"ponybuy|itaobuy|sifubuy|hipobuy|eastmallbuy|sugargoo"
+    r"ponybuy|itaobuy|sifubuy|hipobuy|eastmallbuy|sugargoo|ikako\.vip"
 )
 
 

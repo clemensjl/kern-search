@@ -117,3 +117,11 @@ sources:
     auth: true
   - id: 1wqr_udTOVjZZSryshvbUcrZLSBWvIUXilwPscNDlfJg
     auth: true
+
+# --- Nachtrag 17.08.2026 ---
+# Budget-Sheet verlinkt ausschliesslich ueber ikako.vip-Shortlinks ->
+# scripts/resolve_short.py vor parse.py laufen lassen (Map in data/).
+  - id: 1V8HLT30eYrr_9rv4Ifq_Y59EHE01OU0Tu9Nqt2q_bRw
+    name: "Budget Spreadsheet (Kakobuy)"
+  - id: 1Dp8K9PjzqJZ_pMuxwXCTgJNIr9J1meHPrZUhlU2KboM
+    name: "Best Kakobuy Spreadsheet"
