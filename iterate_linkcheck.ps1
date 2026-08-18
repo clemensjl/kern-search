@@ -10,7 +10,7 @@
 param([int]$MaxAge = 30)
 $ErrorActionPreference = "Continue"
 $env:PYTHONIOENCODING = "utf-8"
-Set-Location "$env:USERPROFILE\Documents\Projekte\kina-search"
+Set-Location "$env:USERPROFILE\Documents\Projekte\kern-search"
 
 $todo = -1
 for ($round = 1; $round -le 6; $round++) {

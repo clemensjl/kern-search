@@ -28,7 +28,7 @@ const display = Archivo({
 });
 
 export const metadata: Metadata = {
-  title: "Kina Search",
+  title: "Kern Search",
   description:
     "Durchsuchbare Datenbank mit knapp 40.000 Finds aus 75 Quellen, mit Agent-Link-Converter, QC-Suche und Collections.",
   // Kein icons-Feld mehr: dateibasierte Metadaten haben in Next hoehere Prioritaet

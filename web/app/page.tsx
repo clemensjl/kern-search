@@ -274,7 +274,7 @@ export default function Home() {
       <header className="app-bar">
         <div className="app-bar__inner">
           <div className="app-bar__row">
-            <h1 className="wordmark"><a href="/">Kina<span className="wordmark__mark">/</span>Search</a></h1>
+            <h1 className="wordmark"><a href="/">Kern<span className="wordmark__mark">/</span>Search</a></h1>
             <div className="app-bar__count">
               {items.length.toLocaleString(locale)} {tr("items")}
             </div>

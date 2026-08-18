@@ -1,10 +1,10 @@
-# kina-search
+# kern-search
 
 Durchsuchbare Datenbank ueber alle China-Agent-Spreadsheets (Insta/TikTok-Quellen).
 Aggregiert Items (Name, Preis, Bild, Kauf-Link, Kategorie) aus allen Sheets in eine
 statische Website mit Suche und Filtern.
 
-Live: https://clemensjl.github.io/kina-search/
+Live: https://clemensjl.github.io/kern-search/
 
 ## Refresh (neue Daten holen)
 

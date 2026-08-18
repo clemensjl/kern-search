@@ -1,4 +1,4 @@
-/* Service Worker fuer kina-search. Handgeschrieben, bewusst konservativ.
+/* Service Worker fuer kern-search. Handgeschrieben, bewusst konservativ.
  *
  * Es gibt in Next 16.2.10 keine eingebaute SW-Konvention, und die verfuegbaren
  * Generatoren scheiden aus (next-pwa tot seit 2022, @serwist/turbopack stirbt auf
@@ -9,16 +9,16 @@
  * 1. Der SW laesst jede Anfrage mit diesem Parameter am Cache vorbei ans Netz,
  *    die Seite laedt also frisch, selbst wenn der Cache vergiftet ist.
  * 2. components/Pwa.tsx meldet daraufhin jede Registrierung ab, loescht alle
- *    Caches und merkt sich die Abschaltung in localStorage ("kina.pwa.off").
- * Zusaetzlich reagiert dieser SW auf postMessage({type:"KINA_SW_UNREGISTER"}).
+ *    Caches und merkt sich die Abschaltung in localStorage ("kern.pwa.off").
+ * Zusaetzlich reagiert dieser SW auf postMessage({type:"KERN_SW_UNREGISTER"}).
  * Letzte Instanz: /sw.js wird mit no-store ausgeliefert, ein Deploy mit einer
  * leeren Fassung plus unregister() erreicht also jeden Client sofort.
  */
 
 const VERSION = "v1";
-const SHELL_CACHE = `kina-shell-${VERSION}`;
-const DATA_CACHE = `kina-data-${VERSION}`;
-const IMAGE_CACHE = `kina-img-${VERSION}`;
+const SHELL_CACHE = `kern-shell-${VERSION}`;
+const DATA_CACHE = `kern-data-${VERSION}`;
+const IMAGE_CACHE = `kern-img-${VERSION}`;
 const KEEP = [SHELL_CACHE, DATA_CACHE, IMAGE_CACHE];
 
 const OFFLINE_URL = "/offline.html";
@@ -85,7 +85,9 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("message", (event) => {
-  if (event.data && event.data.type === "KINA_SW_UNREGISTER") {
+  // "KINA_SW_UNREGISTER" bleibt als Altlast gueltig: bereits installierte Clients
+  // aus der Zeit vor dem Kern-Rebranding kennen nur den alten Namen.
+  if (event.data && (event.data.type === "KERN_SW_UNREGISTER" || event.data.type === "KINA_SW_UNREGISTER")) {
     event.waitUntil(
       (async () => {
         const names = await caches.keys();

@@ -16,7 +16,7 @@ ROOT = Path(__file__).resolve().parent.parent
 ITEMS = ROOT / "site" / "items.json"
 STATUS = ROOT / "data" / "link_status.json"
 META = ROOT / "data" / "item_meta.json"
-URL = "https://kina-search.vercel.app/api/check"
+URL = "https://kern-search.vercel.app/api/check"
 
 KEY = sys.argv[1]
 BATCH = 20

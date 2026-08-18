@@ -6,7 +6,7 @@ import { affiliateActive } from "@/lib/affiliate";
 import { t } from "@/lib/i18n";
 
 export const metadata: Metadata = {
-  title: "Endpreisrechner – Kina Search",
+  title: "Endpreisrechner – Kern Search",
   description:
     "Warenwert, Versand, Agenturgebühr und Einfuhrabgaben in einer Rechnung. Ergebnis als Spanne, mit offengelegten Annahmen.",
   // Die Seite ist bewusst von nirgendwo verlinkt und noch nicht beworben.

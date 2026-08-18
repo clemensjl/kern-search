@@ -10,8 +10,8 @@ import type { MetadataRoute } from "next";
 export default function manifest(): MetadataRoute.Manifest {
   return {
     id: "/",
-    name: "Kina Search",
-    short_name: "Kina",
+    name: "Kern Search",
+    short_name: "Kern",
     description:
       "Durchsuchbare Datenbank mit knapp 40.000 Finds aus 75 Quellen, mit Agent-Link-Converter, QC-Suche und Collections.",
     start_url: "/",

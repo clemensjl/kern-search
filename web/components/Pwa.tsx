@@ -6,14 +6,14 @@ import { useCallback, useEffect, useRef, useState } from "react";
  * FLUCHTWEG: Seite mit "?sw=off" oeffnen. Der Service Worker laesst Anfragen mit
  * diesem Parameter am Cache vorbei, dieser Effekt meldet danach jede Registrierung
  * ab, loescht alle Caches und merkt sich die Abschaltung dauerhaft in localStorage
- * ("kina.pwa.off"). Solange die Marke gesetzt ist, wird nie wieder registriert.
+ * ("kern.pwa.off"). Solange die Marke gesetzt ist, wird nie wieder registriert.
  * Rueckgaengig mit "?sw=on". Damit laesst sich ein fehlerhaft ausgelieferter
  * Service Worker ohne Deploy und ohne DevTools loswerden.
  */
 
-const OFF_KEY = "kina.pwa.off";
-const VISITS_KEY = "kina.pwa.visits";
-const DISMISS_KEY = "kina.pwa.hint-dismissed";
+const OFF_KEY = "kern.pwa.off";
+const VISITS_KEY = "kern.pwa.visits";
+const DISMISS_KEY = "kern.pwa.hint-dismissed";
 const MIN_VISITS = 3;
 
 type InstallPromptEvent = Event & {
@@ -34,6 +34,27 @@ function write(key: string, value: string) {
     localStorage.setItem(key, value);
   } catch {
     /* Privatmodus ohne Speicher: Hinweis erscheint dann eben erneut. */
+  }
+}
+
+// Einmalige Uebernahme der alten kina.*-Schluessel nach dem Rebranding zu Kern.
+// Ohne sie verloere ein Bestandsnutzer sein PWA-Opt-out und saehe den Hinweis erneut.
+function migrateLegacyKeys() {
+  const pairs: Array<[string, string]> = [
+    ["kina.pwa.off", OFF_KEY],
+    ["kina.pwa.visits", VISITS_KEY],
+    ["kina.pwa.hint-dismissed", DISMISS_KEY],
+  ];
+  try {
+    for (const [oldKey, newKey] of pairs) {
+      const v = localStorage.getItem(oldKey);
+      if (v !== null) {
+        if (localStorage.getItem(newKey) === null) localStorage.setItem(newKey, v);
+        localStorage.removeItem(oldKey);
+      }
+    }
+  } catch {
+    /* Ohne Speicherzugriff gibt es auch nichts zu migrieren. */
   }
 }
 
@@ -67,6 +88,8 @@ export default function Pwa() {
   useEffect(() => {
     if (started.current) return;
     started.current = true;
+
+    migrateLegacyKeys();
 
     const params = new URLSearchParams(window.location.search);
     if (params.get("sw") === "on") {
@@ -174,7 +197,7 @@ export default function Pwa() {
     >
       <div style={{ flex: 1, minWidth: 0 }}>
         <p style={{ margin: 0, font: "560 .8125rem/1.3 var(--font-ui, sans-serif)" }}>
-          Kina Search installieren
+          Kern Search installieren
         </p>
         {isIos && !prompt ? (
           <p

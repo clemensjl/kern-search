@@ -3,7 +3,7 @@
 import type { Item } from "./agents";
 
 export const DATA_BASE =
-  process.env.NEXT_PUBLIC_DATA_URL || "https://clemensjl.github.io/kina-search";
+  process.env.NEXT_PUBLIC_DATA_URL || "https://clemensjl.github.io/kern-search";
 
 export type Rates = Record<string, number>;
 export type Db = { items: Item[]; rates: Rates; cats: string[] };

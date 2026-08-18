@@ -1,4 +1,4 @@
-# DESIGN.md: kina-search
+# DESIGN.md: kern-search
 
 Verbindliche Design-Spezifikation. Quelle: Design-DNA-Analyse (11 Referenzen, Grailed / SSENSE / Depop / StockX / Vinted / Are.na / Discord / Linear / GOAT / Reddit / Poizon).
 Diese Datei ersetzt `web/app/page.module.css` und `web/app/globals.css` vollständig.
@@ -10,7 +10,7 @@ Dials: `VARIANCE: mittel` · `MOTION: niedrig` · `DENSITY: hoch`
 
 ## 1. Haltung
 
-kina-search ist kein Shop, sondern ein Terminal, mit dem jemand nachts im Bett ein Item aus 102.000 Datensätzen zieht, es gegen QC-Bilder prüft und den Link in seinen Agent kippt. Dark ist der Default und nicht die Option, weil die Zielgruppe Discord-sozialisiert ist und auf OLED liest. Die UI ist monochrom, weil die Ware die einzige Farbquelle sein darf, und dicht, weil die Alternative Scrollen heißt. Tiefe entsteht ausschließlich über tonale Flächen und 1px-Hairlines, niemals über Schatten, weil Weichspüler-Elevation das Gegenteil der Fundstück-Härte transportiert, die diese Nische feiert. Ein einziger Akzent, ein Vermilion aus dem chinesischen Kaufrot, trägt jede Aktion, und alles Numerische läuft in Mono, weil das die Sprache der Nische ist.
+kern-search ist kein Shop, sondern ein Terminal, mit dem jemand nachts im Bett ein Item aus 102.000 Datensätzen zieht, es gegen QC-Bilder prüft und den Link in seinen Agent kippt. Dark ist der Default und nicht die Option, weil die Zielgruppe Discord-sozialisiert ist und auf OLED liest. Die UI ist monochrom, weil die Ware die einzige Farbquelle sein darf, und dicht, weil die Alternative Scrollen heißt. Tiefe entsteht ausschließlich über tonale Flächen und 1px-Hairlines, niemals über Schatten, weil Weichspüler-Elevation das Gegenteil der Fundstück-Härte transportiert, die diese Nische feiert. Ein einziger Akzent, ein Vermilion aus dem chinesischen Kaufrot, trägt jede Aktion, und alles Numerische läuft in Mono, weil das die Sprache der Nische ist.
 
 ---
 
@@ -241,7 +241,7 @@ const display = Archivo({
 });
 
 export const metadata: Metadata = {
-  title: "Kina Search",
+  title: "Kern Search",
   description:
     "Durchsuchbare Datenbank ueber 100.000+ Finds aus 75 Spreadsheets, mit Agent-Link-Converter, QC-Suche und Collections.",
   icons: {
