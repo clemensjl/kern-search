@@ -204,6 +204,8 @@ Fließtext maximal 65 Zeichen pro Zeile (`max-width: 65ch`). Betrifft nur Sheet-
 
 **Ergebnis: alle drei Familien kommen über `next/font/google`. Kein `next/font/local`, keine Font-Dateien im Repo, kein `@fontsource`-Paket.** Geist wird von Google Fonts ausgeliefert und ist in der Font-Liste dieser Next-Version enthalten. Die Design-DNA-Notiz "self-hostbar via `@fontsource-variable/geist`" ist damit überholt und wird nicht umgesetzt.
 
+**Datenschutz (DSGVO, LG München I, 20.01.2022, Az. 3 O 17493/20):** `next/font/google` lädt die Schriftdateien nur zur Build-Zeit von Google und liefert sie danach unter dem eigenen Pfad `/_next/static/media/*.woff2` aus. Der Browser des Besuchers kontaktiert Google zur Laufzeit nicht, es gibt keine Einwilligungspflicht für die Schriften. Geprüft am Build vom 01.11.2026 (`next build`, Next 16.2.10): im Verzeichnis `web/.next/static` und `web/.next/server/app` kein Treffer auf `fonts.googleapis.com` oder `fonts.gstatic.com`, die `@font-face`-Regeln zeigen auf `../media/*.woff2`. Diese Zusage hält nur, solange keine `<link>`/`@import`-Einbindung von Google dazukommt und die CSP (falls später gesetzt) kein Google zulassen muss.
+
 Weitere geprüfte Details aus `node_modules/next/dist/docs/01-app/03-api-reference/02-components/font.md`:
 
 - `weight` ist nur bei nicht-variablen Fonts Pflicht. Wird es weggelassen, lädt Next die variable Version. Deshalb steht unten nirgends ein `weight`, und deshalb funktionieren die Weights 460 und 560 überhaupt.
