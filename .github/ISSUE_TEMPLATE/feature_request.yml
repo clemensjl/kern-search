@@ -6,7 +6,7 @@ body:
     id: idee
     attributes:
       label: Was soll dazukommen
-      description: Bei einer neuen Quelle: Link zum Google Sheet (muss öffentlich lesbar sein)
+      description: "Bei einer neuen Quelle: Link zum Google Sheet (muss öffentlich lesbar sein)"
     validations:
       required: true
   - type: textarea

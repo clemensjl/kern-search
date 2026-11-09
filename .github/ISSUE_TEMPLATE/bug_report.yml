@@ -6,7 +6,7 @@ body:
     id: problem
     attributes:
       label: Was passiert
-      description: Bei falschen oder toten Items: Name, Kauf-Link und was stimmt
+      description: "Bei falschen oder toten Items: Name, Kauf-Link und was stimmt"
     validations:
       required: true
   - type: textarea
