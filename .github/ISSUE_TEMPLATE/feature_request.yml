@@ -1,0 +1,15 @@
+name: Idee oder neue Quelle
+description: Eine Funktion vorschlagen oder ein Spreadsheet als Quelle melden
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: idee
+    attributes:
+      label: Was soll dazukommen
+      description: Bei einer neuen Quelle: Link zum Google Sheet (muss öffentlich lesbar sein)
+    validations:
+      required: true
+  - type: textarea
+    id: nutzen
+    attributes:
+      label: Wofür brauchst du es
