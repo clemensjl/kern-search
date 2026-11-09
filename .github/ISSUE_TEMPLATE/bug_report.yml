@@ -1,0 +1,20 @@
+name: Fehler
+description: Etwas in der App funktioniert nicht oder ein Item ist falsch
+labels: ["bug"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Was passiert
+      description: Bei falschen oder toten Items: Name, Kauf-Link und was stimmt
+    validations:
+      required: true
+  - type: textarea
+    id: schritte
+    attributes:
+      label: So lässt es sich nachstellen
+  - type: input
+    id: umgebung
+    attributes:
+      label: Browser und Gerät
+      placeholder: "Chrome, Android 15"

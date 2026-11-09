@@ -4,7 +4,17 @@ Durchsuchbare Datenbank ueber alle China-Agent-Spreadsheets (Insta/TikTok-Quelle
 Aggregiert Items (Name, Preis, Bild, Kauf-Link, Kategorie) aus allen Sheets in eine
 statische Website mit Suche und Filtern.
 
-Live: https://clemensjl.github.io/kern-search/
+Live: https://kern-search.vercel.app (App als PWA), statische Variante: https://clemensjl.github.io/kern-search/
+
+## Lokal starten
+
+```bash
+cd web
+npm ci
+npm run dev
+```
+
+Die App läuft auf http://localhost:3000 und lädt die Daten von der veröffentlichten Seite. Tests: `npm test`. Anmeldung und Datenbank sind optional, siehe `web/.env.local.example`. Details in [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ## Refresh (neue Daten holen)
 
@@ -47,3 +57,7 @@ Kategorisierung).
 - `site/` - statische Seite (index.html + items.json + thumbs/), deployt via
   GitHub Actions auf Pages
 - `data/` - Rohdaten, nicht im Repo
+
+## Lizenz
+
+Copyright (c) 2026 Clemens Jele. Der Code steht unter der [AGPL-3.0](./LICENSE). Die Produktdaten in `site/` stammen aus Drittquellen (Community-Spreadsheets) und sind von dieser Lizenz nicht erfasst.
